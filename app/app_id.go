@@ -1,0 +1,41 @@
+package PKG_APP
+
+import (
+	"fmt"
+	"net/url"
+)
+
+type APP string
+
+const (
+	TODO_APP  APP = "todo"
+	EZONE_APP APP = "ezone"
+)
+
+func GetDbConnString(app APP) string {
+	var host = "srv554627.hstgr.cloud"
+	var port = 1433
+	var userId string = "sa"
+	var passWord string = "GreenTrans@123*"
+	var connString string
+	var app_name string
+	switch app {
+	case TODO_APP:
+		app_name = "todo"
+	case EZONE_APP:
+		app_name = "ezone"
+	}
+	query := url.Values{}
+	// query.Add("app name", app_name)
+	query.Add("database", app_name)
+	query.Add("encrypt", "disable")
+	// connString = "sqlserver://sa:GreenTrans@123*@" + host + "?database=" + app_name + "&connection+timeout=30"
+	u := &url.URL{
+		Scheme:   "sqlserver",
+		User:     url.UserPassword(userId, passWord),
+		Host:     fmt.Sprintf("%s:%d", host, port),
+		RawQuery: query.Encode(),
+	}
+	connString = u.String()
+	return connString
+}
