@@ -5,6 +5,7 @@ import (
 	"net/http"
 	PKG_APP "udit/api-padhai/app"
 	"udit/api-padhai/models"
+	"udit/api-padhai/utils"
 
 	mssql "github.com/denisenkom/go-mssqldb"
 	"github.com/gin-gonic/gin"
@@ -117,28 +118,25 @@ func TodoAppRouting(router *gin.Engine) {
 }
 
 func getTodos(ctx *gin.Context) {
-	finalResponse := models.ApiResponse{Status: -1, Message: ""}
+	var finalResponse models.ApiResponse
 	httpStatus := http.StatusAccepted
 	db := connectToDB(APP_NAME)
 	// fmt.Println(db.Stats().OpenConnections)
 	if db != nil {
 		rows, err := db.Query("select * from todo;")
 		if err != nil {
-			finalResponse.Message = err.Error()
-			finalResponse.Response = err
+			finalResponse = utils.GetErrorResponse(err.Error(), err)
 		} else {
 			json, err := returnJsonFromRows(rows)
 			if err != nil {
-				finalResponse.Message = err.Message
-				finalResponse.Response = err
+				finalResponse = utils.GetErrorResponse(err.Message, err)
 			} else {
 				httpStatus = http.StatusOK
-				finalResponse.Status = 1
-				finalResponse.Response = json
+				finalResponse = utils.GetSuccessResponse(json)
 			}
 		}
 	} else {
-		finalResponse.Response = "Something went wrong"
+		finalResponse = utils.GetErrorResponse("Something went wrong.", nil)
 	}
 	ctx.JSON(httpStatus, finalResponse)
 }
