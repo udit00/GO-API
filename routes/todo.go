@@ -113,7 +113,7 @@ func TodoAppRouting(router *gin.Engine) {
 		ctx.JSON(http.StatusOK, names)
 	})
 
-	router.GET(todoApiPrefixRoute+"/getTodos", getTodos)
+	router.GET(todoApiPrefixRoute+"/getTodos", getTodosWithSP)
 
 }
 
@@ -134,6 +134,54 @@ func getTodos(ctx *gin.Context) {
 				httpStatus = http.StatusOK
 				finalResponse = utils.GetSuccessResponse(json)
 			}
+		}
+	} else {
+		finalResponse = utils.GetErrorResponse("Something went wrong.", nil)
+	}
+	ctx.JSON(httpStatus, finalResponse)
+}
+
+func getTodosWithSP(ctx *gin.Context) {
+	var finalResponse models.ApiResponse
+	httpStatus := http.StatusAccepted
+	db := connectToDB(APP_NAME)
+	if db != nil {
+		// rows, err := db.Query("select * from todo;")
+		// if err != nil {
+		// 	finalResponse = utils.GetErrorResponse(err.Error(), err)
+		// } else {
+		// 	json, err := returnJsonFromRows(rows)
+		// 	if err != nil {
+		// 		finalResponse = utils.GetErrorResponse(err.Message, err)
+		// 	} else {
+		// 		httpStatus = http.StatusOK
+		// 		finalResponse = utils.GetSuccessResponse(json)
+		// 	}
+		// }
+		// execQuery := `app_todo_get @userid, @charstr`
+
+		result, err := db.ExecContext(ctx, "app_todo_get 1, ''") // sql.NamedArg{
+		// 	Name:  "prm_userid",
+		// 	Value: 1,
+		// },
+		// sql.NamedArg{
+		// 	Name:  "prm_charstr",
+		// 	Value: "",
+		// },
+
+		// sql.Named("prm_userid", sql),
+		// sql.Named("prm_charstr", ""),
+
+		if err != nil {
+			finalResponse = utils.GetErrorResponse(err.Error(), err)
+		} else {
+			ctx.JSON(http.StatusOK, result)
+			// rows, err := returnJsonFromRows(result)
+			// if err != nil {
+			// 	finalResponse = utils.GetErrorResponse(err.Error(), err)
+			// } else {
+			// 	finalResponse = utils.GetSuccessResponse(rows)
+			// }
 		}
 	} else {
 		finalResponse = utils.GetErrorResponse("Something went wrong.", nil)
