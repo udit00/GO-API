@@ -4,6 +4,7 @@ import (
 	// "database/sql"
 	"database/sql"
 	"net/http"
+	"udit/api-padhai/utils"
 
 	// PKG_APP "udit/api-padhai/app"
 
@@ -13,7 +14,7 @@ import (
 
 func ExampleRouting(router *gin.Engine) {
 	// var APP_NAME PKG_APP.APP = PKG_APP.TODO_APP
-	var exampleApiPrefixRoute string = "/API/todo"
+	var exampleApiPrefixRoute string = "/API/example"
 
 	router.GET(exampleApiPrefixRoute+"/", func(ctx *gin.Context) {
 		// ctx.JSON(http.StatusOK, "hello: asd")
@@ -36,21 +37,21 @@ func ExampleRouting(router *gin.Engine) {
 	router.GET(exampleApiPrefixRoute+"/callSPWIthParams_QueryContext", func(ctx *gin.Context) {
 		var fResult any
 		db := connectToDB(APP_NAME)
-		execQuery := `app_todo_get @userid, @charstr`
+		execQuery := "app_todo_get @prm_userid=?, @prm_searchstr=?"
 		result, err := db.QueryContext(ctx, execQuery,
 			sql.NamedArg{
-				Name:  "userid",
+				Name:  "p1",
 				Value: 1,
 			},
 			sql.NamedArg{
-				Name:  "charstr",
+				Name:  "p2",
 				Value: "",
 			},
 		)
 		if err != nil {
 			fResult = err
 		} else {
-			rows, _ := returnJsonFromRows(result)
+			rows, _ := utils.ReturnJsonFromRows(result)
 			fResult = rows
 		}
 		ctx.JSON(http.StatusOK, fResult)

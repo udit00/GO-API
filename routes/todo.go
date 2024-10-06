@@ -7,7 +7,7 @@ import (
 	"udit/api-padhai/models"
 	"udit/api-padhai/utils"
 
-	mssql "github.com/denisenkom/go-mssqldb"
+	// mssql "github.com/denisenkom/go-mssqldb"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,87 +20,6 @@ func connectToDB(application PKG_APP.APP) *sql.DB {
 		return nil
 	}
 	return db
-}
-
-func returnJsonFromRows(rows *sql.Rows) (fJson any, fError *mssql.Error) {
-	columnTypes, err := rows.ColumnTypes()
-
-	if err != nil {
-		return nil, &mssql.Error{Message: err.Error()}
-	}
-
-	count := len(columnTypes)
-	finalRows := []interface{}{}
-
-	for rows.Next() {
-
-		scanArgs := make([]interface{}, count)
-
-		for i, v := range columnTypes {
-
-			switch v.DatabaseTypeName() {
-			case "VARCHAR", "TEXT", "UUID", "TIMESTAMP":
-				scanArgs[i] = new(sql.NullString)
-				break
-			case "BOOL":
-				scanArgs[i] = new(sql.NullBool)
-				break
-			case "INT4":
-				scanArgs[i] = new(sql.NullInt64)
-				break
-			default:
-				scanArgs[i] = new(sql.NullString)
-			}
-		}
-
-		err := rows.Scan(scanArgs...)
-
-		if err != nil {
-			return nil, &mssql.Error{Message: err.Error()}
-		}
-
-		masterData := map[string]interface{}{}
-
-		for i, v := range columnTypes {
-
-			if z, ok := (scanArgs[i]).(*sql.NullBool); ok {
-				masterData[v.Name()] = z.Bool
-				continue
-			}
-
-			if z, ok := (scanArgs[i]).(*sql.NullString); ok {
-				masterData[v.Name()] = z.String
-				continue
-			}
-
-			if z, ok := (scanArgs[i]).(*sql.NullInt64); ok {
-				masterData[v.Name()] = z.Int64
-				continue
-			}
-
-			if z, ok := (scanArgs[i]).(*sql.NullFloat64); ok {
-				masterData[v.Name()] = z.Float64
-				continue
-			}
-
-			if z, ok := (scanArgs[i]).(*sql.NullInt32); ok {
-				masterData[v.Name()] = z.Int32
-				continue
-			}
-
-			masterData[v.Name()] = scanArgs[i]
-		}
-
-		finalRows = append(finalRows, masterData)
-	}
-	return finalRows, nil
-	// z, err := json.Marshal(finalRows)
-	// if err != nil {
-	// 	return nil, &mssql.Error{Message: err.Error()}
-	// } else {
-	// 	return string(z), nil
-	// }
-	// return z, nil
 }
 
 func TodoAppRouting(router *gin.Engine) {
@@ -127,7 +46,7 @@ func getTodos(ctx *gin.Context) {
 		if err != nil {
 			finalResponse = utils.GetErrorResponse(err.Error(), err)
 		} else {
-			json, err := returnJsonFromRows(rows)
+			json, err := utils.ReturnJsonFromRows(rows)
 			if err != nil {
 				finalResponse = utils.GetErrorResponse(err.Message, err)
 			} else {
@@ -146,28 +65,19 @@ func getTodosWithSP(ctx *gin.Context) {
 	httpStatus := http.StatusAccepted
 	db := connectToDB(APP_NAME)
 	if db != nil {
-		// rows, err := db.Query("select * from todo;")
-		// if err != nil {
-		// 	finalResponse = utils.GetErrorResponse(err.Error(), err)
-		// } else {
-		// 	json, err := returnJsonFromRows(rows)
-		// 	if err != nil {
-		// 		finalResponse = utils.GetErrorResponse(err.Message, err)
-		// 	} else {
-		// 		httpStatus = http.StatusOK
-		// 		finalResponse = utils.GetSuccessResponse(json)
-		// 	}
-		// }
-		// execQuery := `app_todo_get @userid, @charstr`
 
-		result, err := db.ExecContext(ctx, "app_todo_get 1, ''") // sql.NamedArg{
-		// 	Name:  "prm_userid",
-		// 	Value: 1,
-		// },
-		// sql.NamedArg{
-		// 	Name:  "prm_charstr",
-		// 	Value: "",
-		// },
+		// result, err := db.ExecContext(ctx, "app_todo_get 1, ''")
+		execQuery := "app_todo_get @prm_userid=?, @prm_searchstr=?"
+		result, err := db.QueryContext(ctx, execQuery,
+			sql.NamedArg{
+				Name:  "p1",
+				Value: 1,
+			},
+			sql.NamedArg{
+				Name:  "p2",
+				Value: "",
+			},
+		)
 
 		// sql.Named("prm_userid", sql),
 		// sql.Named("prm_charstr", ""),
@@ -175,13 +85,13 @@ func getTodosWithSP(ctx *gin.Context) {
 		if err != nil {
 			finalResponse = utils.GetErrorResponse(err.Error(), err)
 		} else {
-			ctx.JSON(http.StatusOK, result)
-			// rows, err := returnJsonFromRows(result)
-			// if err != nil {
-			// 	finalResponse = utils.GetErrorResponse(err.Error(), err)
-			// } else {
-			// 	finalResponse = utils.GetSuccessResponse(rows)
-			// }
+			// ctx.JSON(http.StatusOK, result)
+			rows, err := utils.ReturnJsonFromRows(result)
+			if err != nil {
+				finalResponse = utils.GetErrorResponse(err.Error(), err)
+			} else {
+				finalResponse = utils.GetSuccessResponse(rows)
+			}
 		}
 	} else {
 		finalResponse = utils.GetErrorResponse("Something went wrong.", nil)
