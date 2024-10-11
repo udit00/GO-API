@@ -15,7 +15,7 @@ func GetErrorResponse(message string, response any) models.ApiResponse {
 	return models.ApiResponse{Status: -1, Message: message, Response: response}
 }
 
-func ReturnJsonFromRows(rows *sql.Rows) (fJson any, fError *mssql.Error) {
+func ReturnJsonFromRows(rows *sql.Rows) (fJson []interface{}, fError *mssql.Error) {
 	columnTypes, err := rows.ColumnTypes()
 
 	if err != nil {

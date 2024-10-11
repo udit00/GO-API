@@ -1,6 +1,7 @@
 package PKG_APP
 
 import (
+	"database/sql"
 	"fmt"
 	"net/url"
 )
@@ -11,6 +12,15 @@ const (
 	TODO_APP  APP = "todo"
 	EZONE_APP APP = "ezone"
 )
+
+func ConnectToDB(application APP) *sql.DB {
+	connString := GetDbConnString(application)
+	db, err := sql.Open("mssql", connString)
+	if err != nil {
+		return nil
+	}
+	return db
+}
 
 func GetDbConnString(app APP) string {
 	var host = "srv554627.hstgr.cloud"

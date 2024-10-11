@@ -18,7 +18,7 @@ func main() {
 	appServer.GET("/", landingPage)
 
 	// "/API/example"
-	routes.ExampleRouting(appServer)
+	// routes.ExampleRouting(appServer)
 
 	// "/API/todo"
 	routes.TodoAppRouting(appServer)
