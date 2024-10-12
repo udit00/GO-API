@@ -24,17 +24,15 @@ func (t TodoRepo) GetUserDetails(userid int) (*sql.Row, error) {
 	db := PKG_APP.ConnectToDB(APP_NAME)
 	if db != nil {
 		// result, err := db.ExecContext(ctx, "app_todo_get 1, ''")
-		query := "SELECT USERID, NAME, PASS, DISPLAYPICTURE, ISPREMIUM, CREATEDON, FBTOKEN, EMAIL_ID, MOBILE_NO FROM USERS"
-		result := db.QueryRow(query,
-			sql.NamedArg{
-				Name:  "p1",
-				Value: 1,
-			},
-			sql.NamedArg{
-				Name:  "p2",
-				Value: "",
-			},
-		)
+		query := "select userid, name, pass, isnull(displaypicture, 'x'), ispremium, createdon, fbtoken, email_id, mobile_no from users where userid = ?"
+		result := db.QueryRow(query, userid) // sql.NamedArg{
+		// 	Name:  "p1",
+		// 	Value: 1,
+		// },
+		// sql.NamedArg{
+		// 	Name:  "p2",
+		// 	Value: "",
+		// },
 
 		// sql.Named("prm_userid", sql),
 		// sql.Named("prm_charstr", ""),

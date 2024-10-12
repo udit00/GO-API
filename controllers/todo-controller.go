@@ -24,15 +24,15 @@ type Todo struct {
 }
 
 type User struct {
-	Userid         int
-	Name           string
-	Pass           string
-	DisplayPicture string
-	IsPremium      string
-	CreatedOn      string
-	FbToken        string
-	EmailId        string
-	MobileNo       string
+	Userid         *int    `db: "userid"`
+	Name           *string `db: "NAME"`
+	Pass           *string `db: "pass"`
+	DisplayPicture *string `db: "displaypicture"`
+	IsPremium      *string `db: "ispremium"`
+	CreatedOn      *string `db: "createdon"`
+	FbToken        *string `db: "fbtoken"`
+	EmailId        *string `db: "email_id"`
+	MobileNo       *string `db: "mobile_no"`
 }
 
 type TodoController struct {
@@ -98,25 +98,25 @@ func ScanRows(rows *sql.Rows, result interface{}) error {
 	return nil
 }
 
-func getUserData(controller TodoController) (User, error) {
+func getUserData(controller TodoController) (*User, error) {
 	var user User = User{}
-	userDataRow, error := controller.todoRepository.GetUserDetails(1)
-	if error != nil {
-
+	userDataRow, err := controller.todoRepository.GetUserDetails(1)
+	if err != nil {
+		return nil, err
 	} else {
-		fmt.Println(userDataRow)
+		userDataRow.Scan(&user.Userid, &user.Name, &user.Pass, &user.DisplayPicture, &user.IsPremium, &user.CreatedOn, &user.FbToken, &user.EmailId, &user.MobileNo)
+		fmt.Println(user)
 	}
-	return user, nil
+	return &user, nil
 }
 
 func (controller TodoController) TodoApp_getTodos(ctx *gin.Context) (*sql.Rows, error) {
 
-	userDataRow, error := getUserData(controller)
-	if error != nil {
-
-	} else {
-		fmt.Println(userDataRow)
+	userData, userDataErr := getUserData(controller)
+	if userDataErr != nil {
+		return nil, userDataErr
 	}
+	fmt.Println(userData)
 	todoRows, err := controller.todoRepository.GetTodos(ctx)
 	if err != nil {
 		return nil, err
@@ -143,6 +143,9 @@ func (controller TodoController) TodoApp_getTodos(ctx *gin.Context) (*sql.Rows, 
 			return nil, err
 		}
 
+		for _, todo := range todos {
+			fmt.Println(todo)
+		}
 		return todoRows, nil
 	}
 }
