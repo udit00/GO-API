@@ -6,7 +6,8 @@ import (
 	// PKG_APP "udit/api-padhai/app"
 	"udit/api-padhai/controllers"
 	"udit/api-padhai/models"
-	"udit/api-padhai/utils"
+
+	// "udit/api-padhai/utils"
 
 	// "udit/api-padhai/utils"
 
@@ -34,8 +35,13 @@ func TodoAppRouting(router *gin.Engine) {
 			finalResponse.Message = err.Error()
 		} else {
 			finalResponse.Status = 1
-			json, _ := utils.ReturnJsonFromRows(todos)
-			finalResponse.Response = json
+			// json, err := utils.ReturnJsonFromRows(todos)
+			if err != nil {
+				finalResponse.Status = -1
+				finalResponse.Response = err
+			} else {
+				finalResponse.Response = todos
+			}
 		}
 		ctx.JSON(httpStatus, finalResponse)
 	})

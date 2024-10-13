@@ -2,25 +2,30 @@ package controllers
 
 import (
 	"database/sql"
+	"encoding/json"
+
+	// "encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
 	"time"
 	"udit/api-padhai/repository"
 
+	// "udit/api-padhai/utils"
+
 	"github.com/gin-gonic/gin"
 	// "github.com/gin-gonic/gin"
 )
 
 type Todo struct {
-	TodoID      int       `json:"todo_id" db:"todo_id"`
-	Title       string    `json:"title" db:"title"`
-	Description string    `json:"description" db:"description"`
-	UserName    string    `json:"name" db:"name"` // Assuming this is the user's name
-	CreatedOn   time.Time `json:"created_on" db:"created_on"`
-	Target      time.Time `json:"target" db:"target"`
-	TypeID      int       `json:"type_id" db:"type_id"`
-	TypeName    string    `json:"type_name" db:"type_name"`
+	TodoID      int    `json:"todo_id" db:"todo_id"`
+	Title       string `json:"title" db:"title"`
+	Description string `json:"description" db:"description"`
+	UserName    string `json:"name" db:"name"` // Assuming this is the user's name
+	CreatedOn   string `json:"created_on" db:"created_on"`
+	Target      string `json:"target" db:"target"`
+	TypeID      int    `json:"type_id" db:"type_id"`
+	TypeName    string `json:"type_name" db:"type_name"`
 }
 
 type User struct {
@@ -111,7 +116,36 @@ func getUserData(controller TodoController) (*User, error) {
 	return &user, nil
 }
 
-func (controller TodoController) TodoApp_getTodos(ctx *gin.Context) (*sql.Rows, error) {
+func rowsToJSON(rows *sql.Rows) ([]byte, error) {
+	defer rows.Close() // Ensure rows are closed when done
+
+	var todos []Todo
+
+	// Iterate through the rows
+	for rows.Next() {
+		var todo Todo
+		if err := rows.Scan(&todo.TodoID, &todo.Title, &todo.Description, &todo.UserName, &todo.CreatedOn, &todo.Target, &todo.TypeID, &todo.TypeName); err != nil {
+			return nil, err
+		}
+		todos = append(todos, todo)
+	}
+
+	// Check for any errors encountered during iteration
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Marshal the slice of todos to JSON
+	jsonData, err := json.Marshal(todos)
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonData, nil
+}
+
+func (controller TodoController) TodoApp_getTodos(ctx *gin.Context) ([]Todo, error) {
+	//(*sql.Rows, error) {
 
 	userData, userDataErr := getUserData(controller)
 	if userDataErr != nil {
@@ -135,18 +169,17 @@ func (controller TodoController) TodoApp_getTodos(ctx *gin.Context) (*sql.Rows, 
 			// handle error
 		}
 
-		for _, todo := range todos {
-			fmt.Printf("Todo ID: %d\n", todo.TodoID)
-			fmt.Printf("Title: %s\n", todo.Title)
-			fmt.Printf("Description: %s\n", todo.Description)
-			fmt.Printf("User: %s\n", todo.UserName)
-			fmt.Printf("Created On: %s\n", todo.CreatedOn.Format("2006-01-02 15:04:05"))
-			fmt.Printf("Target: %s\n", todo.Target.Format("2006-01-02 15:04:05"))
-			fmt.Printf("Type ID: %d\n", todo.TypeID)
-			fmt.Printf("Type Name: %s\n", todo.TypeName)
-			fmt.Println()
-		}
-
-		return todoRows, nil
+		// for _, todo := range todos {
+		// 	fmt.Printf("Todo ID: %d\n", todo.TodoID)
+		// 	fmt.Printf("Title: %s\n", todo.Title)
+		// 	fmt.Printf("Description: %s\n", todo.Description)
+		// 	fmt.Printf("User: %s\n", todo.UserName)
+		// 	fmt.Printf("Created On: %s\n", todo.CreatedOn)
+		// 	fmt.Printf("Target: %s\n", todo.Target)
+		// 	fmt.Printf("Type ID: %d\n", todo.TypeID)
+		// 	fmt.Printf("Type Name: %s\n", todo.TypeName)
+		// 	fmt.Println()
+		// }
+		return todos, nil
 	}
 }
