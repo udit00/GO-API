@@ -24,7 +24,7 @@ func (t TodoRepo) GetUserDetails(userid int) (*sql.Row, error) {
 	db := PKG_APP.ConnectToDB(APP_NAME)
 	if db != nil {
 		// result, err := db.ExecContext(ctx, "app_todo_get 1, ''")
-		query := "select userid, name, pass, isnull(displaypicture, 'x'), ispremium, createdon, fbtoken, email_id, mobile_no from users where userid = ?"
+		query := "select user_id,name,pass,display_picture,created_on,firebase_token,email_id,mobile_no,is_active,is_premium from users where user_id = ?"
 		result := db.QueryRow(query, userid) // sql.NamedArg{
 		// 	Name:  "p1",
 		// 	Value: 1,
@@ -50,22 +50,23 @@ func (t TodoRepo) GetUserDetails(userid int) (*sql.Row, error) {
 func (t TodoRepo) GetTodos(ctx *gin.Context) (*sql.Rows, error) {
 	db := PKG_APP.ConnectToDB(APP_NAME)
 	if db != nil {
-		// result, err := db.ExecContext(ctx, "app_todo_get 1, ''")
-		execQuery := "app_todo_get @prm_userid=?, @prm_searchstr=?"
-		result, err := db.QueryContext(ctx, execQuery,
+		query := `select  	t.todo_id, t.title, t.description, 
+							u.name, t.created_on, t.target,
+							tt.type_id, tt.type_name
+						from todo t
+						inner join todo_type tt on tt.type_id = t.type_id
+						inner join users u on u.user_id = t.user_id
+						where t.user_id = ?`
+		result, err := db.QueryContext(ctx, query,
 			sql.NamedArg{
 				Name:  "p1",
 				Value: 1,
 			},
-			sql.NamedArg{
-				Name:  "p2",
-				Value: "",
-			},
+			// sql.NamedArg{
+			// 	Name:  "p2",
+			// 	Value: "",
+			// },
 		)
-
-		// sql.Named("prm_userid", sql),
-		// sql.Named("prm_charstr", ""),
-
 		if err != nil {
 			return nil, err
 		} else {

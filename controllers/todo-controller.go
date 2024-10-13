@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 	"udit/api-padhai/repository"
 
 	"github.com/gin-gonic/gin"
@@ -12,27 +13,27 @@ import (
 )
 
 type Todo struct {
-	Todoid      string `json:"todoid"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Userid      string `json:"userid"`
-	Createdon   string `json:"createdon"`
-	// Createid    string `json:"createid"`
-	Todotypeid string `json:"todotypeid"`
-	Typename   string `json:"typename"`
-	Target     string `json:"target"`
+	TodoID      int       `json:"todo_id" db:"todo_id"`
+	Title       string    `json:"title" db:"title"`
+	Description string    `json:"description" db:"description"`
+	UserName    string    `json:"name" db:"name"` // Assuming this is the user's name
+	CreatedOn   time.Time `json:"created_on" db:"created_on"`
+	Target      time.Time `json:"target" db:"target"`
+	TypeID      int       `json:"type_id" db:"type_id"`
+	TypeName    string    `json:"type_name" db:"type_name"`
 }
 
 type User struct {
-	Userid         *int    `db: "userid"`
-	Name           *string `db: "NAME"`
-	Pass           *string `db: "pass"`
-	DisplayPicture *string `db: "displaypicture"`
-	IsPremium      *string `db: "ispremium"`
-	CreatedOn      *string `db: "createdon"`
-	FbToken        *string `db: "fbtoken"`
-	EmailId        *string `db: "email_id"`
-	MobileNo       *string `db: "mobile_no"`
+	UserID         int       `db:"user_id"`
+	Name           string    `db:"name"`
+	Password       string    `db:"pass"` // Avoid using "pass" as it can be misleading. Consider using "Password" instead.
+	DisplayPicture *string   `db:"display_picture"`
+	CreatedOn      time.Time `db:"created_on"`
+	FirebaseToken  *string   `db:"firebase_token"`
+	EmailID        *string   `db:"email_id"`
+	MobileNo       string    `db:"mobile_no"`
+	IsActive       bool      `db:"is_active"`
+	IsPremium      bool      `db:"is_premium"`
 }
 
 type TodoController struct {
@@ -104,7 +105,7 @@ func getUserData(controller TodoController) (*User, error) {
 	if err != nil {
 		return nil, err
 	} else {
-		userDataRow.Scan(&user.Userid, &user.Name, &user.Pass, &user.DisplayPicture, &user.IsPremium, &user.CreatedOn, &user.FbToken, &user.EmailId, &user.MobileNo)
+		userDataRow.Scan(&user.UserID, &user.Name, &user.Password, &user.DisplayPicture, &user.CreatedOn, &user.FirebaseToken, &user.EmailID, &user.MobileNo, &user.IsActive, &user.IsPremium)
 		fmt.Println(user)
 	}
 	return &user, nil
@@ -121,31 +122,31 @@ func (controller TodoController) TodoApp_getTodos(ctx *gin.Context) (*sql.Rows, 
 	if err != nil {
 		return nil, err
 	} else {
-
-		// var results []Todo
-		// for todoRows.Next() {
-		// 	var item Todo
-		// 	err := todoRows.Scan(&item.Todoid, &item.Title, &item.Description, &item.Userid, &item.Createdon, &item.Todotypeid, &item.Typename, &item.Target)
-		// 	if err != nil {
-		// 		// ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Row scanning failed"})
-		// 		// return
-		// 		return nil, err
-		// 	} else {
-		// 		fmt.Println(&item)
-		// 	}
-		// 	results = append(results, item)
-		// }
-
 		var todos []Todo
+		for todoRows.Next() {
+			var todo Todo
+			if err := todoRows.Scan(&todo.TodoID, &todo.Title, &todo.Description, &todo.UserName, &todo.CreatedOn, &todo.Target, &todo.TypeID, &todo.TypeName); err != nil {
+				// handle error
+			}
+			todos = append(todos, todo)
+		}
 
-		// Scan rows into the slice of Todo
-		if err := ScanRows(todoRows, &todos); err != nil {
-			return nil, err
+		if err := todoRows.Err(); err != nil {
+			// handle error
 		}
 
 		for _, todo := range todos {
-			fmt.Println(todo)
+			fmt.Printf("Todo ID: %d\n", todo.TodoID)
+			fmt.Printf("Title: %s\n", todo.Title)
+			fmt.Printf("Description: %s\n", todo.Description)
+			fmt.Printf("User: %s\n", todo.UserName)
+			fmt.Printf("Created On: %s\n", todo.CreatedOn.Format("2006-01-02 15:04:05"))
+			fmt.Printf("Target: %s\n", todo.Target.Format("2006-01-02 15:04:05"))
+			fmt.Printf("Type ID: %d\n", todo.TypeID)
+			fmt.Printf("Type Name: %s\n", todo.TypeName)
+			fmt.Println()
 		}
+
 		return todoRows, nil
 	}
 }
