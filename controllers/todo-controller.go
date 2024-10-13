@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"database/sql"
-	"encoding/json"
+	// "encoding/json"
 
 	// "encoding/json"
 	"fmt"
@@ -116,35 +116,7 @@ func getUserData(controller TodoController) (*User, error) {
 	return &user, nil
 }
 
-func rowsToJSON(rows *sql.Rows) ([]byte, error) {
-	defer rows.Close() // Ensure rows are closed when done
-
-	var todos []Todo
-
-	// Iterate through the rows
-	for rows.Next() {
-		var todo Todo
-		if err := rows.Scan(&todo.TodoID, &todo.Title, &todo.Description, &todo.UserName, &todo.CreatedOn, &todo.Target, &todo.TypeID, &todo.TypeName); err != nil {
-			return nil, err
-		}
-		todos = append(todos, todo)
-	}
-
-	// Check for any errors encountered during iteration
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	// Marshal the slice of todos to JSON
-	jsonData, err := json.Marshal(todos)
-	if err != nil {
-		return nil, err
-	}
-
-	return jsonData, nil
-}
-
-func (controller TodoController) TodoApp_getTodos(ctx *gin.Context) ([]Todo, error) {
+func (controller TodoController) TodoApp_getTodos(ctx *gin.Context, params map[string]string) ([]Todo, error) {
 	//(*sql.Rows, error) {
 
 	userData, userDataErr := getUserData(controller)
@@ -152,7 +124,9 @@ func (controller TodoController) TodoApp_getTodos(ctx *gin.Context) ([]Todo, err
 		return nil, userDataErr
 	}
 	fmt.Println(userData)
-	todoRows, err := controller.todoRepository.GetTodos(ctx)
+	var userId = params["userId"]
+	var charStr = params["charStr"]
+	todoRows, err := controller.todoRepository.GetTodos(ctx, userId, charStr)
 	if err != nil {
 		return nil, err
 	} else {

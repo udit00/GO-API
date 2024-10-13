@@ -2,7 +2,10 @@ package routes
 
 import (
 	// "database/sql"
+
+	// "fmt"
 	"net/http"
+
 	// PKG_APP "udit/api-padhai/app"
 	"udit/api-padhai/controllers"
 	"udit/api-padhai/models"
@@ -27,21 +30,23 @@ func TodoAppRouting(router *gin.Engine) {
 	})
 
 	router.GET(todoApiPrefixRoute+"/getTodos", func(ctx *gin.Context) {
+		// fmt.Println(ctx.Query("userId"))
+		// fmt.Println(ctx.Request.URL.Query())
+		var userId string = ctx.Query("userId")
+		var charStr string = ctx.Query("charStr")
+
+		params := make(map[string]string)
+		params["userId"] = userId
+		params["charStr"] = charStr
 		var finalResponse models.ApiResponse
 		httpStatus := http.StatusAccepted
-		todos, err := todoController.TodoApp_getTodos(ctx)
+		todos, err := todoController.TodoApp_getTodos(ctx, params)
 		if err != nil {
 			finalResponse.Status = -1
 			finalResponse.Message = err.Error()
 		} else {
 			finalResponse.Status = 1
-			// json, err := utils.ReturnJsonFromRows(todos)
-			if err != nil {
-				finalResponse.Status = -1
-				finalResponse.Response = err
-			} else {
-				finalResponse.Response = todos
-			}
+			finalResponse.Response = todos
 		}
 		ctx.JSON(httpStatus, finalResponse)
 	})

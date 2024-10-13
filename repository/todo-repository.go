@@ -47,26 +47,29 @@ func (t TodoRepo) GetUserDetails(userid int) (*sql.Row, error) {
 	return nil, errors.New(utils.DBError)
 }
 
-func (t TodoRepo) GetTodos(ctx *gin.Context) (*sql.Rows, error) {
+func (t TodoRepo) GetTodos(ctx *gin.Context, userId string, charStr string) (*sql.Rows, error) {
 	db := PKG_APP.ConnectToDB(APP_NAME)
 	if db != nil {
-		// query := `select  	t.todo_id, t.title, t.description,
-		// 					u.name, t.created_on, t.target,
-		// 					tt.type_id, tt.type_name
-		// 				from todo t
-		// 				inner join todo_type tt on tt.type_id = t.type_id
-		// 				inner join users u on u.user_id = t.user_id
-		// 				where t.user_id = ?`
-		query := "exec app_todo_get @prm_userid = ?"
+		query := `select  	t.todo_id, t.title, t.description,
+							u.name, t.created_on, t.target,
+							tt.type_id, tt.type_name
+						from todo t
+						inner join todo_type tt on tt.type_id = t.type_id
+						inner join users u on u.user_id = t.user_id
+						where t.user_id = ?
+						and isnull(t.title, '') like '%' + ? + '%'`
+
+		// query := "exec app_todo_get @prm_userid = ?"
 		result, err := db.QueryContext(ctx, query,
 			sql.NamedArg{
 				Name:  "p1",
-				Value: 1,
+				Value: userId,
 			},
-			// sql.NamedArg{
-			// 	Name:  "p2",
-			// 	Value: "",
-			// },
+
+			sql.NamedArg{
+				Name:  "p2",
+				Value: charStr,
+			},
 		)
 		if err != nil {
 			return nil, err
