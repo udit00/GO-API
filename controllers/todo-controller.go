@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"database/sql"
+	"errors"
+
 	// "encoding/json"
 
 	// "encoding/json"
@@ -10,10 +12,8 @@ import (
 	"strings"
 	"time"
 	"udit/api-padhai/repository"
-
 	// "udit/api-padhai/utils"
-
-	"github.com/gin-gonic/gin"
+	// "github.com/gin-gonic/gin"
 	// "github.com/gin-gonic/gin"
 )
 
@@ -104,7 +104,7 @@ func ScanRows(rows *sql.Rows, result interface{}) error {
 	return nil
 }
 
-func getUserData(controller TodoController) (*User, error) {
+func getUserDataByUserId(controller TodoController) (*User, error) {
 	var user User = User{}
 	userDataRow, err := controller.todoRepository.GetUserDetails(1)
 	if err != nil {
@@ -116,17 +116,36 @@ func getUserData(controller TodoController) (*User, error) {
 	return &user, nil
 }
 
-func (controller TodoController) TodoApp_getTodos(ctx *gin.Context, params map[string]string) ([]Todo, error) {
+func (controller TodoController) TodoApp_userLogin(params map[string]string) (*User, error) {
+	var user User = User{}
+	var userNameMobileNo = params["userNameMobileNo"]
+	var passWord = params["passWord"]
+	ifUserExists, errStr := controller.todoRepository.CheckIfUserExists(userNameMobileNo)
+	if errStr != "" {
+		return nil, errors.New(errStr)
+	} else if ifUserExists {
+		userDataRow, err := controller.todoRepository.LoginUser(userNameMobileNo, passWord)
+		if err != nil {
+			return nil, err
+		} else {
+			userDataRow.Scan(&user.UserID, &user.Name, &user.Password, &user.DisplayPicture, &user.CreatedOn, &user.FirebaseToken, &user.EmailID, &user.MobileNo, &user.IsActive, &user.IsPremium)
+			return &user, nil
+		}
+	}
+	return nil, errors.New(errStr)
+}
+
+func (controller TodoController) TodoApp_getTodos(params map[string]string) ([]Todo, error) {
 	//(*sql.Rows, error) {
 
-	userData, userDataErr := getUserData(controller)
+	userData, userDataErr := getUserDataByUserId(controller)
 	if userDataErr != nil {
 		return nil, userDataErr
 	}
 	fmt.Println(userData)
 	var userId = params["userId"]
 	var charStr = params["charStr"]
-	todoRows, err := controller.todoRepository.GetTodos(ctx, userId, charStr)
+	todoRows, err := controller.todoRepository.GetTodos(userId, charStr)
 	if err != nil {
 		return nil, err
 	} else {

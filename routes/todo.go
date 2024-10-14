@@ -29,6 +29,25 @@ func TodoAppRouting(router *gin.Engine) {
 		ctx.JSON(http.StatusOK, names)
 	})
 
+	router.GET(todoApiPrefixRoute+"/userLogin", func(ctx *gin.Context) {
+		var userNameMobileNo string = ctx.Query("userNameMobileNo")
+		var passWord string = ctx.Query("passWord")
+		params := make(map[string]string)
+		params["userNameMobileNo"] = userNameMobileNo
+		params["passWord"] = passWord
+		var finalResponse models.ApiResponse
+		httpStatus := http.StatusAccepted
+		user, err := todoController.TodoApp_userLogin(params)
+		if err != nil {
+			finalResponse.Status = -1
+			finalResponse.Message = err.Error()
+		} else {
+			finalResponse.Status = 1
+			finalResponse.Response = user
+		}
+		ctx.JSON(httpStatus, finalResponse)
+	})
+
 	router.GET(todoApiPrefixRoute+"/getTodos", func(ctx *gin.Context) {
 		// fmt.Println(ctx.Query("userId"))
 		// fmt.Println(ctx.Request.URL.Query())
@@ -40,7 +59,7 @@ func TodoAppRouting(router *gin.Engine) {
 		params["charStr"] = charStr
 		var finalResponse models.ApiResponse
 		httpStatus := http.StatusAccepted
-		todos, err := todoController.TodoApp_getTodos(ctx, params)
+		todos, err := todoController.TodoApp_getTodos(params)
 		if err != nil {
 			finalResponse.Status = -1
 			finalResponse.Message = err.Error()
