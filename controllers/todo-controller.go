@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"strings"
 	"time"
+	"udit/api-padhai/models"
 	"udit/api-padhai/repository"
 	// "udit/api-padhai/utils"
 	// "github.com/gin-gonic/gin"
@@ -116,10 +117,12 @@ func getUserDataByUserId(controller TodoController) (*User, error) {
 	return &user, nil
 }
 
-func (controller TodoController) TodoApp_userLogin(params map[string]string) (*User, error) {
+func (controller TodoController) TodoApp_userLogin(requestBody models.RequestBodyUserLogin) (*User, error) {
 	var user User = User{}
-	var userNameMobileNo = params["userNameMobileNo"]
-	var passWord = params["passWord"]
+	userNameMobileNo := requestBody.UserNameMobileNo
+	passWord := requestBody.Password
+	// ipAddress := requestBody.LoginIPAddress
+	// platform := requestBody.LoginPlatform
 	ifUserExists, errStr := controller.todoRepository.CheckIfUserExists(userNameMobileNo)
 	if errStr != "" {
 		return nil, errors.New(errStr)

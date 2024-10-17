@@ -23,7 +23,7 @@ func (t TodoRepo) CheckIfUserExists(userNameMobileNo string) (bool, string) {
 	db := PKG_APP.ConnectToDB(APP_NAME)
 	var exists bool
 	if db != nil {
-		query := "SELECT CASE WHEN EXISTS (SELECT 1 FROM Users WHERE (mobile_no = " + userNameMobileNo + " or name = " + userNameMobileNo + ")) THEN 1 ELSE 0 END"
+		query := "SELECT CASE WHEN EXISTS (SELECT 1 FROM Users WHERE (mobile_no = '" + userNameMobileNo + "' or name = '" + userNameMobileNo + "')) THEN 1 ELSE 0 END"
 		db.QueryRow(query).Scan(&exists)
 		if exists {
 			return true, ""

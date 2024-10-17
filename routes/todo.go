@@ -4,6 +4,7 @@ import (
 	// "database/sql"
 
 	// "fmt"
+	// "io"
 	"net/http"
 
 	// PKG_APP "udit/api-padhai/app"
@@ -29,15 +30,14 @@ func TodoAppRouting(router *gin.Engine) {
 		ctx.JSON(http.StatusOK, names)
 	})
 
-	router.GET(todoApiPrefixRoute+"/userLogin", func(ctx *gin.Context) {
-		var userNameMobileNo string = ctx.Query("userNameMobileNo")
-		var passWord string = ctx.Query("passWord")
-		params := make(map[string]string)
-		params["userNameMobileNo"] = userNameMobileNo
-		params["passWord"] = passWord
+	router.POST(todoApiPrefixRoute+"/userLogin", func(ctx *gin.Context) {
+		var requestBody models.RequestBodyUserLogin
+		if err := ctx.BindJSON(&requestBody); err != nil {
+			ctx.JSON(http.StatusBadRequest, err)
+		}
 		var finalResponse models.ApiResponse
 		httpStatus := http.StatusAccepted
-		user, err := todoController.TodoApp_userLogin(params)
+		user, err := todoController.TodoApp_userLogin(requestBody)
 		if err != nil {
 			finalResponse.Status = -1
 			finalResponse.Message = err.Error()
@@ -46,7 +46,27 @@ func TodoAppRouting(router *gin.Engine) {
 			finalResponse.Response = user
 		}
 		ctx.JSON(httpStatus, finalResponse)
+
 	})
+
+	// router.GET(todoApiPrefixRoute+"/userLogin", func(ctx *gin.Context) {
+	// 	var userNameMobileNo string = ctx.Query("userNameMobileNo")
+	// 	var passWord string = ctx.Query("passWord")
+	// 	params := make(map[string]string)
+	// 	params["userNameMobileNo"] = userNameMobileNo
+	// 	params["passWord"] = passWord
+	// 	var finalResponse models.ApiResponse
+	// 	httpStatus := http.StatusAccepted
+	// 	user, err := todoController.TodoApp_userLogin(params)
+	// 	if err != nil {
+	// 		finalResponse.Status = -1
+	// 		finalResponse.Message = err.Error()
+	// 	} else {
+	// 		finalResponse.Status = 1
+	// 		finalResponse.Response = user
+	// 	}
+	// 	ctx.JSON(httpStatus, finalResponse)
+	// })
 
 	router.GET(todoApiPrefixRoute+"/getTodos", func(ctx *gin.Context) {
 		// fmt.Println(ctx.Query("userId"))
