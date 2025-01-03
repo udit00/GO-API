@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"errors"
+	"time"
 	PKG_APP "udit/api-padhai/app"
 	"udit/api-padhai/utils"
 	// "github.com/gin-gonic/gin"
@@ -85,6 +86,39 @@ func (t TodoRepo) GetTodos(userId string, charStr string) (*sql.Rows, error) {
 			sql.NamedArg{
 				Name:  "p2",
 				Value: charStr,
+			},
+		)
+		if err != nil {
+			return nil, err
+		} else {
+			return result, nil
+		}
+	}
+	return nil, errors.New(utils.DBError)
+}
+
+// func (t TodoRepo) TodoType_Update() {
+// 	db := PKG_APP.ConnectToDB(APP_NAME)
+// 	if db != nil {
+// 		query := `select t.todoid, t.title,
+// 					u.name, u.firebase_token
+// 					from todo t
+// 					inner join users u on u.user_id = t.user_id
+// 					where t.target
+// 					`
+// 	}
+// }
+
+func (t TodoRepo) TodoType_Insert() (*sql.Rows, error) {
+	db := PKG_APP.ConnectToDB(APP_NAME)
+	if db != nil {
+		currentTime := time.Now()
+		query := `Insert into todo_type(type_id, type_name, create_id, created_on, color, is_light)
+					values(4, 'Kitchen4', 2, ?, '18380234649705119744', 1)`
+		result, err := db.Query(query,
+			sql.NamedArg{
+				Name:  "p1",
+				Value: currentTime.Format("2006-01-02 15:04:05"),
 			},
 		)
 		if err != nil {

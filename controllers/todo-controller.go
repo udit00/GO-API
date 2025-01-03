@@ -10,37 +10,14 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-	"time"
+
+	// "time"
 	"udit/api-padhai/models"
 	"udit/api-padhai/repository"
 	// "udit/api-padhai/utils"
 	// "github.com/gin-gonic/gin"
 	// "github.com/gin-gonic/gin"
 )
-
-type Todo struct {
-	TodoID      int    `json:"todo_id" db:"todo_id"`
-	Title       string `json:"title" db:"title"`
-	Description string `json:"description" db:"description"`
-	UserName    string `json:"name" db:"name"` // Assuming this is the user's name
-	CreatedOn   string `json:"created_on" db:"created_on"`
-	Target      string `json:"target" db:"target"`
-	TypeID      int    `json:"type_id" db:"type_id"`
-	TypeName    string `json:"type_name" db:"type_name"`
-}
-
-type User struct {
-	UserID         int       `db:"user_id"`
-	Name           string    `db:"name"`
-	Password       string    `db:"pass"` // Avoid using "pass" as it can be misleading. Consider using "Password" instead.
-	DisplayPicture *string   `db:"display_picture"`
-	CreatedOn      time.Time `db:"created_on"`
-	FirebaseToken  *string   `db:"firebase_token"`
-	EmailID        *string   `db:"email_id"`
-	MobileNo       string    `db:"mobile_no"`
-	IsActive       bool      `db:"is_active"`
-	IsPremium      bool      `db:"is_premium"`
-}
 
 type TodoController struct {
 	// ctx *gin.Context
@@ -105,8 +82,8 @@ func ScanRows(rows *sql.Rows, result interface{}) error {
 	return nil
 }
 
-func getUserDataByUserId(controller TodoController) (*User, error) {
-	var user User = User{}
+func getUserDataByUserId(controller TodoController) (*models.User, error) {
+	var user models.User = models.User{}
 	userDataRow, err := controller.todoRepository.GetUserDetails(1)
 	if err != nil {
 		return nil, err
@@ -117,8 +94,8 @@ func getUserDataByUserId(controller TodoController) (*User, error) {
 	return &user, nil
 }
 
-func (controller TodoController) TodoApp_userLogin(requestBody models.RequestBodyUserLogin) (*User, error) {
-	var user User = User{}
+func (controller TodoController) TodoApp_userLogin(requestBody models.RequestBodyUserLogin) (*models.User, error) {
+	var user models.User = models.User{}
 	userNameMobileNo := requestBody.UserNameMobileNo
 	passWord := requestBody.Password
 	// ipAddress := requestBody.LoginIPAddress
@@ -138,7 +115,17 @@ func (controller TodoController) TodoApp_userLogin(requestBody models.RequestBod
 	return nil, errors.New(errStr)
 }
 
-func (controller TodoController) TodoApp_getTodos(params map[string]string) ([]Todo, error) {
+func (controller TodoController) TodoApp_InsertTodoType() {
+	result, err := controller.todoRepository.TodoType_Insert()
+	if err != nil {
+		fmt.Print(err)
+		// return nil, errors.New
+	} else {
+		fmt.Print(result)
+	}
+}
+
+func (controller TodoController) TodoApp_getTodos(params map[string]string) ([]models.Todo, error) {
 	//(*sql.Rows, error) {
 
 	userData, userDataErr := getUserDataByUserId(controller)
@@ -152,9 +139,9 @@ func (controller TodoController) TodoApp_getTodos(params map[string]string) ([]T
 	if err != nil {
 		return nil, err
 	} else {
-		var todos []Todo
+		var todos []models.Todo
 		for todoRows.Next() {
-			var todo Todo
+			var todo models.Todo
 			if err := todoRows.Scan(&todo.TodoID, &todo.Title, &todo.Description, &todo.UserName, &todo.CreatedOn, &todo.Target, &todo.TypeID, &todo.TypeName); err != nil {
 				// handle error
 			}

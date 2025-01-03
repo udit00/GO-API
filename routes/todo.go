@@ -49,6 +49,11 @@ func TodoAppRouting(router *gin.Engine) {
 
 	})
 
+	router.POST(todoApiPrefixRoute+"/InsertTodoType", func(ctx *gin.Context) {
+		todoController.TodoApp_InsertTodoType()
+		ctx.JSON(http.StatusAccepted, "")
+	})
+
 	// router.GET(todoApiPrefixRoute+"/userLogin", func(ctx *gin.Context) {
 	// 	var userNameMobileNo string = ctx.Query("userNameMobileNo")
 	// 	var passWord string = ctx.Query("passWord")
@@ -89,6 +94,13 @@ func TodoAppRouting(router *gin.Engine) {
 		}
 		ctx.JSON(httpStatus, finalResponse)
 	})
+
+	// router.PATCH(todoApiPrefixRoute+"/updateFireBaseToken", func(ctx *gin.Context) {
+	// 	var userId string = ctx.Query("userId")
+	// 	var fbToken string = ctx.Query("firebaseToken")
+
+	// 	params := make
+	// })
 
 }
 

@@ -23,8 +23,8 @@ func main() {
 	// "/API/todo"
 	routes.TodoAppRouting(appServer)
 
-	// appServer.Run("localhost:10000")
-	appServer.Run()
+	appServer.Run("localhost:5000")
+	// appServer.Run()
 }
 
 // docker build . -t uditnair90/api-padhai-golang:latest
