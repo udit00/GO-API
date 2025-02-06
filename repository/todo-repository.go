@@ -25,6 +25,62 @@ type TodoRepo struct {
 	// ctx *gin.Context
 }
 
+func (t TodoRepo) CheckIfDatabaseExists() (doesTheRowExists bool, err error) {
+	db := PKG_APP.ConnectToMasterDB()
+	var exists bool
+	if db != nil {
+		query := "select cast(case when exists(select 1 from sys.databases where name = '" + string(APP_NAME) + "') then 1 else 0 end as bit)"
+		result := db.QueryRow(query)
+		err := result.Err()
+		if err != nil {
+			fmt.Print(err)
+			return false, err
+		} else {
+			result.Scan(&exists)
+			return exists, nil
+		}
+	}
+	return false, errors.New("server error")
+}
+
+func (t TodoRepo) CreateDB() (created bool, err error) {
+	db := PKG_APP.ConnectToMasterDB()
+	var isCreated bool
+	if db != nil {
+		query := "create database " + string(APP_NAME)
+		result := db.QueryRow(query)
+		err := result.Err()
+		if err != nil {
+			fmt.Errorf(err.Error())
+			return false, err
+		} else {
+			result.Scan(&isCreated)
+			return isCreated, nil
+		}
+	}
+	return false, errors.New("Server Error")
+}
+
+func (t TodoRepo) CreateTable(tableModel models.Tables) {
+	db := PKG_APP.ConnectToDB(APP_NAME)
+	if db != nil {
+		fmt.Println("Creating table " + tableModel.TableName)
+		query := tableModel.TableCreationQuery
+		result, err := db.Exec(query)
+		if err != nil {
+			fmt.Errorf("%s", err.Error())
+		} else {
+			rowsEffected, err := result.RowsAffected()
+			if err != nil {
+				fmt.Errorf("%s", err.Error())
+			} else {
+				fmt.Println("TABLE CREATION Rows Affected - " + utils.ConvertIntToString(int(rowsEffected)))
+			}
+		}
+	}
+	fmt.Errorf("server error, could not connect.")
+}
+
 func (t TodoRepo) CheckIfRowExists(query string) (doesTheRowExists bool, err error) {
 	db := PKG_APP.ConnectToDB(APP_NAME)
 	var exists bool

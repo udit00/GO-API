@@ -24,6 +24,7 @@ import (
 func TodoAppRouting(router *gin.Engine) {
 	// var APP_NAME PKG_APP.APP = PKG_APP.TODO_APP
 	todoController := controllers.TodoController{}
+	todoController.InitialSetup()
 	var todoApiPrefixRoute string = "/API/todo"
 
 	router.GET(todoApiPrefixRoute+"/", func(ctx *gin.Context) {

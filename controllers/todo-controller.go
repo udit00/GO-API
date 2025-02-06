@@ -14,8 +14,10 @@ import (
 	"strings"
 
 	// "time"
+	PKG_APP "udit/api-padhai/app"
 	"udit/api-padhai/models"
 	"udit/api-padhai/repository"
+	"udit/api-padhai/tables"
 	"udit/api-padhai/utils"
 	// "udit/api-padhai/utils"
 	// "github.com/gin-gonic/gin"
@@ -25,10 +27,47 @@ import (
 type TodoController struct {
 	// ctx *gin.Context
 	todoRepository repository.TodoRepo
+	app            PKG_APP.APP
 }
 
 func NewController() *TodoController {
 	return &TodoController{todoRepository: repository.TodoRepo{}}
+}
+
+func (controller TodoController) InitialSetup() {
+	checkAndCreateDatabase(controller)
+	checkAndCreateTables(controller)
+}
+
+func checkAndCreateDatabase(controller TodoController) {
+	dbExists, err := controller.todoRepository.CheckIfDatabaseExists()
+	if err != nil {
+		fmt.Errorf("%s", err.Error())
+		return
+	}
+	if !dbExists {
+		fmt.Println("Database " + string(controller.app) + " does not exist.")
+		fmt.Println("Creating DB " + string(controller.app))
+		controller.todoRepository.CreateDB()
+	} else {
+		fmt.Println("Database " + string(controller.app) + " already exists.")
+	}
+}
+
+func checkAndCreateTables(controller TodoController) {
+	allTables := tables.GetTables()
+	for i := 0; i < len(allTables); i++ {
+		table := allTables[i]
+		query := "select 1 from sys.objects where type = 'U' and name = '" + table.TableName + "'"
+		tableExists, err := controller.todoRepository.CheckIfRowExists(query)
+		if err != nil {
+			fmt.Errorf(err.Error())
+		} else {
+			if !tableExists {
+				controller.todoRepository.CreateTable(table)
+			}
+		}
+	}
 }
 
 func ScanRows(rows *sql.Rows, result interface{}) error {
