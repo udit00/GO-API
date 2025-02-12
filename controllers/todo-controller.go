@@ -42,7 +42,7 @@ func (controller TodoController) InitialSetup() {
 func checkAndCreateDatabase(controller TodoController) {
 	dbExists, err := controller.todoRepository.CheckIfDatabaseExists()
 	if err != nil {
-		fmt.Errorf("%s", err.Error())
+		fmt.Println(err.Error())
 		return
 	}
 	if !dbExists {
@@ -61,10 +61,19 @@ func checkAndCreateTables(controller TodoController) {
 		query := "select 1 from sys.objects where type = 'U' and name = '" + table.TableName + "'"
 		tableExists, err := controller.todoRepository.CheckIfRowExists(query)
 		if err != nil {
-			fmt.Errorf(err.Error())
+			fmt.Println(err.Error())
 		} else {
 			if !tableExists {
-				controller.todoRepository.CreateTable(table)
+				isCreated, err := controller.todoRepository.CreateTable(table)
+				if err != nil {
+					fmt.Println(err)
+				} else {
+					if isCreated {
+						controller.todoRepository.AlterTableCommands(table)
+					} else {
+						fmt.Println("Table was not created for some reason.")
+					}
+				}
 			}
 		}
 	}

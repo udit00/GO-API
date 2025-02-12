@@ -51,34 +51,60 @@ func (t TodoRepo) CreateDB() (created bool, err error) {
 		result := db.QueryRow(query)
 		err := result.Err()
 		if err != nil {
-			fmt.Errorf(err.Error())
+			fmt.Println(err.Error())
 			return false, err
 		} else {
 			result.Scan(&isCreated)
 			return isCreated, nil
 		}
 	}
-	return false, errors.New("Server Error")
+	return false, errors.New("server error")
 }
 
-func (t TodoRepo) CreateTable(tableModel models.Tables) {
+func (t TodoRepo) CreateTable(tableModel models.Tables) (bool, error) {
 	db := PKG_APP.ConnectToDB(APP_NAME)
 	if db != nil {
 		fmt.Println("Creating table " + tableModel.TableName)
 		query := tableModel.TableCreationQuery
 		result, err := db.Exec(query)
 		if err != nil {
-			fmt.Errorf("%s", err.Error())
+			return false, err
 		} else {
-			rowsEffected, err := result.RowsAffected()
+			_, err := result.RowsAffected()
 			if err != nil {
-				fmt.Errorf("%s", err.Error())
+				return false, err
 			} else {
-				fmt.Println("TABLE CREATION Rows Affected - " + utils.ConvertIntToString(int(rowsEffected)))
+				return true, nil
 			}
 		}
 	}
-	fmt.Errorf("server error, could not connect.")
+	return false, errors.New("server error, could not connect")
+}
+
+func (t TodoRepo) AlterTableCommands(tableModel models.Tables) {
+	db := PKG_APP.ConnectToDB(APP_NAME)
+	if db != nil {
+		fmt.Println("Altering table " + tableModel.TableName)
+		alterQueries := tableModel.AlterTableQueries
+		for i := range alterQueries {
+			query := alterQueries[i]
+			result, err := db.Exec(query)
+			if err != nil {
+				fmt.Println(err.Error())
+			} else {
+				rowsEffected, err := result.RowsAffected()
+				if err != nil {
+					fmt.Println(err.Error())
+				} else {
+					fmt.Println("Alter Table Rows Affected - " + utils.ConvertIntToString(int(rowsEffected)))
+				}
+			}
+		}
+		return
+		// query := tableModel.TableCreationQuery
+
+	}
+	fmt.Println("server error, could not connect.")
 }
 
 func (t TodoRepo) CheckIfRowExists(query string) (doesTheRowExists bool, err error) {
