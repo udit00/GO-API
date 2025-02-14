@@ -37,6 +37,7 @@ func NewController() *TodoController {
 func (controller TodoController) InitialSetup() {
 	checkAndCreateDatabase(controller)
 	checkAndCreateTables(controller)
+	checkAndCreateAdminUser(controller)
 }
 
 func checkAndCreateDatabase(controller TodoController) {
@@ -73,6 +74,28 @@ func checkAndCreateTables(controller TodoController) {
 					} else {
 						fmt.Println("Table was not created for some reason.")
 					}
+				}
+			}
+		}
+	}
+}
+
+func checkAndCreateAdminUser(controller TodoController) {
+	query := "select 1 from sys.objects where type = 'U' and name = 'users'"
+	tableExists, err := controller.todoRepository.CheckIfRowExists(query)
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		if tableExists {
+			adminUserExistQuery := "select 1 from users where name = 'Admin' and user_id = 1"
+			isAdminAlreadyInUserTable, err := controller.todoRepository.CheckIfRowExists(adminUserExistQuery)
+			if err != nil {
+				fmt.Println(err.Error())
+			} else {
+				if !isAdminAlreadyInUserTable {
+					controller.todoRepository.InsertAdminUser()
+				} else {
+					fmt.Println("User Admin Already exists in the Table User")
 				}
 			}
 		}

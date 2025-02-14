@@ -104,7 +104,27 @@ func (t TodoRepo) AlterTableCommands(tableModel models.Tables) {
 		// query := tableModel.TableCreationQuery
 
 	}
-	fmt.Println("server error, could not connect.")
+	fmt.Println(utils.DBError)
+}
+
+func (t TodoRepo) InsertAdminUser() {
+	db := PKG_APP.ConnectToDB(APP_NAME)
+	if db != nil {
+		insertQuery := ""
+		result, err := db.Exec(insertQuery)
+		if err != nil {
+			fmt.Println(err.Error())
+		} else {
+			rowsEffected, err := result.RowsAffected()
+			if err != nil {
+				fmt.Println(err.Error())
+			} else {
+				fmt.Println("Insert Table Rows Affected - " + utils.ConvertIntToString(int(rowsEffected)))
+			}
+		}
+		return
+	}
+	fmt.Println(utils.DBError)
 }
 
 func (t TodoRepo) CheckIfRowExists(query string) (doesTheRowExists bool, err error) {

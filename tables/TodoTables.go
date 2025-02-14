@@ -8,7 +8,8 @@ func populateTablesStructure() {
 	todoTables = append(todoTables, table_User())
 	todoTables = append(todoTables, table_Todo())
 	todoTables = append(todoTables, table_TodoType())
-	todoTables = append(todoTables, table_Color())
+	todoTables = append(todoTables, table_TodoStatus())
+	todoTables = append(todoTables, table_Colors())
 	todoTables = append(todoTables, table_LoginLogs())
 }
 
@@ -81,7 +82,24 @@ func table_TodoType() models.Tables {
 	return table
 }
 
-func table_Color() models.Tables {
+func table_TodoStatus() models.Tables {
+	alterQueries := []string{
+		"ALTER TABLE [dbo].[todo_status] ADD  DEFAULT (getdate()) FOR [created_on]",
+	}
+	table := models.Tables{
+		TableName: "todo_status",
+		TableCreationQuery: "CREATE TABLE [dbo].[todo_status]( " +
+			"[status_id] [int] IDENTITY(1,1) NOT NULL, " +
+			"[status_name] [varchar](20) NOT NULL, " +
+			"[color_id] [int] NULL, " +
+			"[create_id] [int] NOT NULL, " +
+			"[created_on] [datetime] NOT NULL )",
+		AlterTableQueries: alterQueries,
+	}
+	return table
+}
+
+func table_Colors() models.Tables {
 	return models.Tables{
 		TableName:          "colors",
 		TableCreationQuery: "CREATE TABLE [dbo].[colors]([color_id] [int] IDENTITY(1,1) NOT NULL,[color_name] [varchar](50) NULL,[color_value] [varchar](50) NULL,[is_light] [bit] NULL,[create_id] [int] NULL,[created_on] [datetime] default getdate())",
