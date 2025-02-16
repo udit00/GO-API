@@ -109,13 +109,12 @@ func table_Colors() models.Tables {
 
 func table_LoginLogs() models.Tables {
 	var alterQueries []string
-	alterQueries = append(alterQueries, "ALTER TABLE [dbo].[login_logs] ADD  DEFAULT (NULL) FOR [user_id]")
 	alterQueries = append(alterQueries, "ALTER TABLE [dbo].[login_logs] ADD  DEFAULT (NULL) FOR [ip_address]")
 	alterQueries = append(alterQueries, "ALTER TABLE [dbo].[login_logs] ADD  DEFAULT (getdate()) FOR [login_time]")
 	alterQueries = append(alterQueries, "ALTER TABLE [dbo].[login_logs] WITH CHECK ADD FOREIGN KEY([user_id]) REFERENCES [dbo].[users] ([user_id])")
 	table := models.Tables{
 		TableName:          "login_logs",
-		TableCreationQuery: "CREATE TABLE [dbo].[login_logs]([user_id] [int] NULL,[ip_address] [varchar](100) NULL,[login_time] [datetime] NULL,[session_id] [varchar](100) NOT NULL,[platform] [text] NULL)",
+		TableCreationQuery: "CREATE TABLE [dbo].[login_logs]([user_id] [int] NOT NULL,[ip_address] [varchar](100) NULL,[login_time] [datetime] NULL,[session_id] [varchar](50) NOT NULL,[platform] [varchar](7) NOT NULL)",
 		AlterTableQueries:  alterQueries,
 	}
 	return table

@@ -81,6 +81,26 @@ func (t TodoRepo) CreateTable(tableModel models.Tables) (bool, error) {
 	return false, errors.New("server error, could not connect")
 }
 
+func (t TodoRepo) CreateFunction(functionModel models.Function) (bool, error) {
+	db := PKG_APP.ConnectToDB(APP_NAME)
+	if db != nil {
+		fmt.Println("Creating function " + functionModel.FunctionName)
+		query := functionModel.FunctionCreationQuery
+		result, err := db.Exec(query)
+		if err != nil {
+			return false, err
+		} else {
+			_, err := result.RowsAffected()
+			if err != nil {
+				return false, err
+			} else {
+				return true, nil
+			}
+		}
+	}
+	return false, errors.New("server error, could not connect")
+}
+
 func (t TodoRepo) AlterTableCommands(tableModel models.Tables) {
 	db := PKG_APP.ConnectToDB(APP_NAME)
 	if db != nil {

@@ -15,6 +15,7 @@ import (
 
 	// "time"
 	PKG_APP "udit/api-padhai/app"
+	"udit/api-padhai/functions"
 	"udit/api-padhai/models"
 	"udit/api-padhai/repository"
 	"udit/api-padhai/tables"
@@ -37,6 +38,7 @@ func NewController() *TodoController {
 func (controller TodoController) InitialSetup() {
 	checkAndCreateDatabase(controller)
 	checkAndCreateTables(controller)
+	checkAndCreateFunctions(controller)
 	checkAndCreateAdminUser(controller)
 }
 
@@ -71,6 +73,31 @@ func checkAndCreateTables(controller TodoController) {
 				} else {
 					if isCreated {
 						controller.todoRepository.AlterTableCommands(table)
+					} else {
+						fmt.Println("Table was not created for some reason.")
+					}
+				}
+			}
+		}
+	}
+}
+
+func checkAndCreateFunctions(controller TodoController) {
+	allFunctions := functions.GetAllFunctionsToCreate()
+	for i := 0; i < len(allFunctions); i++ {
+		function := allFunctions[i]
+		query := "select 1 from sys.objects where type = 'FN' and name = '" + function.FunctionName + "'"
+		functionExists, err := controller.todoRepository.CheckIfRowExists(query)
+		if err != nil {
+			fmt.Println(err.Error())
+		} else {
+			if !functionExists {
+				isCreated, err := controller.todoRepository.CreateFunction(function)
+				if err != nil {
+					fmt.Println(err)
+				} else {
+					if isCreated {
+						fmt.Println("Function [ " + function.FunctionName + " ] was created successfully.")
 					} else {
 						fmt.Println("Table was not created for some reason.")
 					}
