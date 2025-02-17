@@ -147,6 +147,24 @@ func (t TodoRepo) InsertAdminUser() {
 	fmt.Println(utils.DBError)
 }
 
+func (t TodoRepo) GetSessionId(userId int, platform string, loginTime string) (sessionId string, err error) {
+	db := PKG_APP.ConnectToDB(APP_NAME)
+	if db != nil {
+		query := "SELECT dbo.GetSessionId(" + utils.ConvertIntToString(userId) + ",'" + platform + "','" + loginTime + "'" + ")"
+		// db.QueryRow(query).Scan(&exists)
+		result := db.QueryRow(query)
+		err := result.Err()
+		if err != nil {
+			fmt.Print(err)
+			return utils.DBError, err
+		} else {
+			result.Scan(&sessionId)
+			return sessionId, nil
+		}
+	}
+	return utils.DBError, errors.New("server error")
+}
+
 func (t TodoRepo) CheckIfRowExists(query string) (doesTheRowExists bool, err error) {
 	db := PKG_APP.ConnectToDB(APP_NAME)
 	var exists bool
@@ -254,6 +272,42 @@ func (t TodoRepo) NextTodoIDAsPerUser(userId int) (*sql.Row, error) {
 			return result, nil
 		}
 		return nil, result.Err()
+	}
+	return nil, errors.New(utils.DBError)
+}
+
+func (t TodoRepo) Todo_InsertSession(userId int, ipaddress string, loginTime string, sessionId string, platform string) (*sql.Row, error) {
+	db := PKG_APP.ConnectToDB(APP_NAME)
+	if db != nil {
+		insertQuery := `insert into login_logs(user_id, ip_address, login_time, session_id, platform) 
+						values (?, ?, ?, ? ,?)`
+		result := db.QueryRow(insertQuery,
+			sql.NamedArg{
+				Name:  "p1",
+				Value: userId,
+			},
+			sql.NamedArg{
+				Name:  "p2",
+				Value: ipaddress,
+			},
+			sql.NamedArg{
+				Name:  "p3",
+				Value: loginTime,
+			},
+			sql.NamedArg{
+				Name:  "p4",
+				Value: sessionId,
+			},
+			sql.NamedArg{
+				Name:  "p5",
+				Value: platform,
+			},
+		)
+		if result != nil {
+			return result, nil
+		} else {
+			return nil, errors.New("could not insert")
+		}
 	}
 	return nil, errors.New(utils.DBError)
 }

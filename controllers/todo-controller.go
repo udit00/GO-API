@@ -195,6 +195,25 @@ func (controller TodoController) getUserDataByUserId(userId int) (*models.User, 
 	return &user, nil
 }
 
+func (controller TodoController) TodoApp_InsertUserSession(userId int, ipAddress string, loginTime string, platform string) (*string, error) {
+	sessionId, err := controller.todoRepository.GetSessionId(userId, platform, loginTime)
+	if err != nil {
+		return nil, err
+	} else {
+		if sessionId == "" {
+			return nil, errors.New("sessionId was not created correctly")
+		} else {
+			_, err := controller.todoRepository.Todo_InsertSession(userId, ipAddress, loginTime, sessionId, platform)
+			if err != nil {
+				return nil, err
+			} else {
+				return &sessionId, nil
+			}
+		}
+	}
+
+}
+
 func (controller TodoController) TodoApp_userLogin(requestBody models.RequestBodyUserLogin) (*models.User, error) {
 	var user models.User = models.User{}
 	userNameMobileNo := requestBody.UserNameMobileNo
@@ -205,7 +224,7 @@ func (controller TodoController) TodoApp_userLogin(requestBody models.RequestBod
 	ifUserExists, errFromIfUserExists := controller.todoRepository.CheckIfRowExists(checkIfUserExistsQuery)
 	if errFromIfUserExists != nil {
 		return nil, errFromIfUserExists
-	} else if ifUserExists {
+	} else if !ifUserExists {
 		return nil, errors.New("user doesn't exist")
 	} else {
 		userDataRow, err := controller.todoRepository.LoginUser(userNameMobileNo, passWord)
@@ -213,7 +232,16 @@ func (controller TodoController) TodoApp_userLogin(requestBody models.RequestBod
 			return nil, err
 		} else {
 			userDataRow.Scan(&user.UserID, &user.Name, &user.Password, &user.DisplayPicture, &user.CreatedOn, &user.FirebaseToken, &user.EmailID, &user.MobileNo, &user.IsActive, &user.IsPremium)
-			return &user, nil
+			sessionId, err := controller.TodoApp_InsertUserSession(user.UserID, "", utils.GetCurrentDateTimeForSqlString(), requestBody.LoginPlatform)
+			if err != nil {
+				return nil, err
+			} else {
+				if sessionId != nil {
+					return &user, nil
+				} else {
+					return nil, errors.New("could not create session")
+				}
+			}
 		}
 	}
 	// return nil, errors.New(errStr)

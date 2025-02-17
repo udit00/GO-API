@@ -13,4 +13,5 @@ type User struct {
 	MobileNo       string    `db:"mobile_no"`
 	IsActive       bool      `db:"is_active"`
 	IsPremium      bool      `db:"is_premium"`
+	sessionId      string    `db:"sessionid"`
 }
