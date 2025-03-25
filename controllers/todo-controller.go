@@ -222,6 +222,7 @@ func (controller TodoController) TodoApp_userLogin(requestBody models.RequestBod
 	// platform := requestBody.LoginPlatform
 	checkIfUserExistsQuery := "SELECT 1 FROM Users WHERE (mobile_no = '" + userNameMobileNo + "' or name = '" + userNameMobileNo + "')"
 	ifUserExists, errFromIfUserExists := controller.todoRepository.CheckIfRowExists(checkIfUserExistsQuery)
+	fmt.Print(ifUserExists)
 	if errFromIfUserExists != nil {
 		return nil, errFromIfUserExists
 	} else if !ifUserExists {
