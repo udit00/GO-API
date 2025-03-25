@@ -6,7 +6,6 @@ import (
 	// "fmt"
 	// "io"
 
-	"fmt"
 	"net/http"
 
 	// PKG_APP "udit/api-padhai/app"
@@ -43,7 +42,6 @@ func TodoAppRouting(router *gin.Engine) {
 	// })
 
 	router.POST(todoApiPrefixRoute+"/userLogin", func(ctx *gin.Context) {
-		fmt.Print("Testing UserLogin")
 		var requestBody models.RequestBodyUserLogin
 		if err := ctx.BindJSON(&requestBody); err != nil {
 			ctx.JSON(http.StatusBadRequest, err)
