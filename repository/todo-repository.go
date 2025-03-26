@@ -278,6 +278,12 @@ func (t TodoRepo) NextTodoIDAsPerUser(userId int) (*sql.Row, error) {
 
 func (t TodoRepo) Todo_InsertSession(userId int, ipaddress string, loginTime string, sessionId string, platform string) (*sql.Row, error) {
 	db := PKG_APP.ConnectToDB(APP_NAME)
+	var correctedIp *string = nil
+	if ipaddress == "" {
+		correctedIp = nil
+	} else {
+		correctedIp = &ipaddress
+	}
 	if db != nil {
 		insertQuery := `insert into login_logs(user_id, ip_address, login_time, session_id, platform) 
 						values (?, ?, ?, ? ,?)`
@@ -288,7 +294,7 @@ func (t TodoRepo) Todo_InsertSession(userId int, ipaddress string, loginTime str
 			},
 			sql.NamedArg{
 				Name:  "p2",
-				Value: ipaddress,
+				Value: correctedIp,
 			},
 			sql.NamedArg{
 				Name:  "p3",

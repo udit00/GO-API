@@ -222,10 +222,14 @@ func (controller TodoController) TodoApp_userLogin(requestBody models.RequestBod
 	// platform := requestBody.LoginPlatform
 	checkIfUserExistsQuery := "SELECT 1 FROM Users WHERE (mobile_no = '" + userNameMobileNo + "' or name = '" + userNameMobileNo + "')"
 	ifUserExists, errFromIfUserExists := controller.todoRepository.CheckIfRowExists(checkIfUserExistsQuery)
-	if errFromIfUserExists != nil {
+	checkIfUserPasswordIsCorrectQuery := "SELECT 1 FROM Users WHERE (mobile_no = '" + userNameMobileNo + "' or name = '" + userNameMobileNo + "') and pass = '" + requestBody.Password + "'"
+	isPasswordCorrect, errFromIsPasswordCorrect := controller.todoRepository.CheckIfRowExists(checkIfUserPasswordIsCorrectQuery)
+	if errFromIfUserExists != nil || errFromIsPasswordCorrect != nil {
 		return nil, errFromIfUserExists
 	} else if !ifUserExists {
 		return nil, errors.New("user doesn't exist")
+	} else if !isPasswordCorrect {
+		return nil, errors.New("wrong password")
 	} else {
 		userDataRow, err := controller.todoRepository.LoginUser(userNameMobileNo, passWord)
 		if err != nil {
