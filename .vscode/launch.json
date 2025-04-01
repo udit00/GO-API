@@ -10,6 +10,27 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}"
+        },
+        {
+            "name": "Launch Go App with Docker Build",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "env": {},
+            "args": [],
+            "preLaunchTask": "docker-build"
         }
-    ]
+    ],
+    "tasks": {
+        "version": "2.0.0",
+        "tasks": [
+            {
+                "label": "docker-build",
+                "type": "shell",
+                "command": "docker build . -t uditnair90/api-padhai-golang:latest",
+                "problemMatcher": []
+            }
+        ]
+    }
 }

@@ -41,6 +41,11 @@ func main() {
 
 // docker build . -t uditnair90/api-padhai-golang:latest
 // docker push uditnair90/api-padhai-golang:latest
+
+/*  DOCKER BUILD AND PUSH
+docker build . -t uditnair90/api-padhai-golang:latest && docker push uditnair90/api-padhai-golang:latest
+*/
+
 // docker pull uditnair90/api-padhai-golang:latest
 // docker run -d -e PORT=10000 -p 10000:10000 uditnair90/api-padhai-golang:latest
 // docker run --detach --pull=always --quiet --name uditnair90_api-padhai-golang --env PORT=10000 --publish 10000:10000 uditnair90/api-padhai-golang:latest
