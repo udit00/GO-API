@@ -1,16 +1,23 @@
+# Use a specific minor version for stability
 FROM golang:1.23
 
+# Set the working directory inside the container
 WORKDIR /app
 
-# COPY go.mod go.sum ./
+# Copy go.mod and go.sum first for better caching
+COPY go.mod go.sum ./
 
+# Download dependencies before copying the rest of the code
+RUN go mod download && go mod verify
+
+# Copy the rest of the source code
 COPY . .
-# RUN go mod download && go mod verify
 
-RUN go get
+# Build the binary
 RUN go build -o bin .
 
+# Expose the required port
 EXPOSE 10000
 
-# ENTRYPOINT [ "/app/bin" , "--port=10000"] 
-ENTRYPOINT [ "/app/bin"] 
+# Ensure logs can be written to the mounted volume (No changes needed)
+ENTRYPOINT [ "/app/bin" ]

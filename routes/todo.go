@@ -7,7 +7,6 @@ import (
 	// "io"
 
 	"net/http"
-	"os/exec"
 
 	// PKG_APP "udit/api-padhai/app"
 	"udit/api-padhai/controllers"
@@ -59,43 +58,6 @@ func TodoAppRouting(router *gin.Engine) {
 		}
 		ctx.JSON(httpStatus, finalResponse)
 
-	})
-
-	router.POST(todoApiPrefixRoute+"/userLoginFake", func(ctx *gin.Context) {
-		var requestBody models.RequestBodyUserLogin
-		if err := ctx.BindJSON(&requestBody); err != nil {
-			ctx.JSON(http.StatusBadRequest, err)
-		}
-		var finalResponse models.ApiResponse
-		httpStatus := http.StatusAccepted
-		user, err := todoController.TodoApp_userLogin(requestBody)
-		if err != nil {
-			finalResponse.Status = -1
-			finalResponse.Message = err.Error()
-		} else {
-			finalResponse.Status = 1
-			finalResponse.Response = user
-		}
-		ctx.JSON(httpStatus, finalResponse)
-
-	})
-
-	router.POST(todoApiPrefixRoute+"/dockerOperationsAfterPush", func(ctx *gin.Context) {
-		// Path to the script inside the container
-		scriptPath := "/scripts/restartDockerContainerWithPull.sh"
-		// Execute the script
-		cmd := exec.Command("bash", scriptPath)
-		cmd.Stdout = nil // No output capturing
-		cmd.Stderr = nil // No error capturing
-
-		err := cmd.Start()
-		if err != nil {
-			ctx.JSON(http.StatusExpectationFailed, "Error starting script:"+err.Error())
-			return
-		}
-
-		// Print message and exit (script runs in background)
-		ctx.JSON(http.StatusOK, "Script started successfully 2!")
 	})
 
 	// router.POST(todoApiPrefixRoute+"/InsertTodoType", func(ctx *gin.Context) {

@@ -1,18 +1,31 @@
 {
-	"version": "2.0.0",
-	"tasks": [
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build Api-Padhai-Go-Lang",
+            "type": "shell",
+            "command": "docker build . -t uditnair90/api-padhai-golang:latest",
+            "problemMatcher": []
+        },
+        {
+            "label": "push Api-Padhai-Go-Lang",
+            "type": "shell",
+            "command": "docker push uditnair90/api-padhai-golang:latest",
+            "problemMatcher": []
+        },
 		{
-			"type": "go",
-			"label": "go: build package",
-			"command": "build",
-			"args": [
-				"${fileDirname}"
-			],
-			"problemMatcher": [
-				"$go"
-			],
-			"group": "build",
-			"detail": "cd /home/udit/Desktop/Projects/API/Go/apipadhai; go build ${fileDirname}"
+            "label": "pull Api-Padhai-Go-Lang",
+            "type": "shell",
+            "command": "docker pull uditnair90/api-padhai-golang:latest",
+            "problemMatcher": []
+        },
+		{
+			"label": "Remove Unused Images",
+			"type": "shell",
+			"command": "docker image prune -f",
+			"problemMatcher": []
 		}
-	]
+    ]
 }
